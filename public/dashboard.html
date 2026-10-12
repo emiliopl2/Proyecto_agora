@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ágora - panel principal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center">
+
+<div class="bg-slate-8000 p-8 rounded-xl shadow-xl text-center border border-slate-700 w-96">
+    <h1 class="text-3xl font-bold mb-2">¡Bienvenido!</h1>
+    <p id="nombreUsuario" class="text-indigo-400 text-lg font-medum mb-"></p>
+    <p id="rolUsuario" class="text-slate-400 text-sm mv-6"></p>
+
+    <button onclick="cerrarSesion()"
+        class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-500 transition duration-200">
+        Cerrar Sesión
+    </button> 
+</div>
+
+<script>
+
+    //Carga datos fuardados al iniciar sesión 
+    const usuarioGuardado = localStorage.getItem('usuario');
+    if(!usuarioGuardado) {
+        // si no hay sesión, regresar al login
+        window.location.href = "index.html"
+    } else {
+        const user = JSON.parse(usuarioGuardado);
+        document.getElementById('nombreUsuario').textContent = user.nombre;
+        document.getElementById('rolUsuario').textContent = `Rol: ${user.rol} (${user.correo})`;
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('usuario');
+        window.location.href = 'index.html';
+    }
+
+</script>
+
+</body>
+
+</html>
