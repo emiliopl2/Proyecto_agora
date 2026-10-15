@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ágora - Donadores</title>
+    <link rel="icon" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/agora.css">
+</head>
+<body data-pagina="donadores" data-titulo="Donadores" data-subtitulo="Donantes y sus donaciones">
+
+<!--
+  NOTAS PARA EMI (conexión con el backend)
+  - Tablas: Donantes y Donaciones.
+  - En los formularios, name="" es EXACTAMENTE el nombre de la columna en la BD (el id="" casi siempre también;
+    la única excepción es el select de donante de la donación, que tiene id="DonanteID_donacion" y name="DonanteID").
+    Con Object.fromEntries(new FormData(form)) obtienes el objeto listo para mandar.
+  - Los checkbox solo aparecen en FormData cuando están marcados: si no vienen, es 0 (false).
+  - Los <option value=""> son los valores reales de la BD; el texto visible es solo para leer mejor.
+  - Las filas de las tablas son de ejemplo: sustituye el contenido de <tbody> con lo que regrese tu API
+    (cada <tr> lleva data-id con el ID del registro).
+  - FechaDonacion no está en el formulario porque en el script SQL no se manda al insertar (supongo que la BD la llena sola).
+  - Los formularios tienen data-demo para que no recarguen la página; quítalo cuando los conectes.
+-->
+
+<div class="app-shell">
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <div class="app-main">
+        <header id="topbar" class="topbar"></header>
+
+        <main id="contenido" class="contenido">
+
+            <!-- Indicadores -->
+            <section class="grid cols-3" aria-label="Resumen">
+                <div class="card kpi">
+                    <span class="kpi-icono t-rosa"><span data-icon="heart"></span></span>
+                    <div><div class="kpi-valor">3</div><div class="kpi-texto">Donantes registrados</div></div>
+                </div>
+                <div class="card kpi">
+                    <span class="kpi-icono t-ok"><span data-icon="coin"></span></span>
+                    <div><div class="kpi-valor">$400.50</div><div class="kpi-texto">Total donado</div></div>
+                </div>
+                <div class="card kpi">
+                    <span class="kpi-icono t-dorado"><span data-icon="file"></span></span>
+                    <div><div class="kpi-valor">3</div><div class="kpi-texto">Recibos pendientes de emitir</div></div>
+                </div>
+            </section>
+
+            <section class="card">
+                <!-- Pestañas -->
+                <div class="tabs" role="tablist" style="padding: 0 12px;">
+                    <button class="tab activo" role="tab" aria-selected="true" data-tab="panelDonantes" id="tabDonantes">Donantes</button>
+                    <button class="tab" role="tab" aria-selected="false" data-tab="panelDonaciones" id="tabDonaciones">Donaciones</button>
+                </div>
+
+                <!-- ============ DONANTES ============ -->
+                <div id="panelDonantes" role="tabpanel" aria-labelledby="tabDonantes">
+                    <div class="card-cuerpo toolbar">
+                        <div class="filtros">
+                            <div class="buscador">
+                                <span data-icon="search"></span>
+                                <input type="search" id="buscarDonante" class="input" placeholder="Buscar por nombre o correo" aria-label="Buscar donante">
+                            </div>
+                            <select id="filtroNivel" class="select" aria-label="Filtrar por nivel">
+                                <option value="">Todos los niveles</option>
+                                <option value="Semilla">Semilla</option>
+                                <option value="Maceta">Maceta</option>
+                                <option value="Árbol">Árbol</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primario" id="btnNuevoDonante" data-abrir="modalDonante">
+                            <span data-icon="plus"></span> Nuevo donante
+                        </button>
+                    </div>
+
+                    <div class="tabla-wrap">
+                        <table class="tabla" id="tablaDonantes">
+                            <thead>
+                                <tr>
+                                    <th>Donante</th>
+                                    <th>Contacto</th>
+                                    <th>Nivel actual</th>
+                                    <th>Nivel sugerido</th>
+                                    <th class="num">Total donado</th>
+                                    <th>RFC</th>
+                                    <th><span class="solo-lectores">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyDonantes">
+                                <tr data-id="1">
+                                    <td class="principal">Ana López</td>
+                                    <td>ana@correo.com<span class="secundario">5551110001</span></td>
+                                    <td><span class="badge b-dorado">Semilla</span></td>
+                                    <td><span class="badge b-rosa">Maceta</span></td>
+                                    <td class="num">$55.00</td>
+                                    <td>—</td>
+                                    <td>
+                                        <div class="acciones">
+                                            <button type="button" class="btn-icono btn-editar" data-abrir="modalDonante" aria-label="Editar a Ana López"><span data-icon="edit"></span></button>
+                                            <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar a Ana López"><span data-icon="trash"></span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="2">
+                                    <td class="principal">Luis Pérez</td>
+                                    <td>luis@correo.com<span class="secundario">5551110002</span></td>
+                                    <td><span class="badge b-rosa">Maceta</span></td>
+                                    <td><span class="badge b-rosa">Maceta</span></td>
+                                    <td class="num">$75.50</td>
+                                    <td>—</td>
+                                    <td>
+                                        <div class="acciones">
+                                            <button type="button" class="btn-icono btn-editar" data-abrir="modalDonante" aria-label="Editar a Luis Pérez"><span data-icon="edit"></span></button>
+                                            <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar a Luis Pérez"><span data-icon="trash"></span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="3">
+                                    <td class="principal">María Gómez<span class="secundario">María Gómez Díaz</span></td>
+                                    <td>maria@correo.com<span class="secundario">5551110003</span></td>
+                                    <td><span class="badge b-dorado">Semilla</span></td>
+                                    <td><span class="badge b-ok">Árbol</span></td>
+                                    <td class="num">$270.00</td>
+                                    <td>GODM800101AB1</td>
+                                    <td>
+                                        <div class="acciones">
+                                            <button type="button" class="btn-icono btn-editar" data-abrir="modalDonante" aria-label="Editar a María Gómez"><span data-icon="edit"></span></button>
+                                            <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar a María Gómez"><span data-icon="trash"></span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tabla-pie"><span>Mostrando 3 de 3 donantes</span></div>
+                </div>
+
+                <!-- ============ DONACIONES ============ -->
+                <div id="panelDonaciones" role="tabpanel" aria-labelledby="tabDonaciones" hidden>
+                    <div class="card-cuerpo toolbar">
+                        <div class="filtros">
+                            <div class="buscador">
+                                <span data-icon="search"></span>
+                                <input type="search" id="buscarDonacion" class="input" placeholder="Buscar por donante" aria-label="Buscar donación">
+                            </div>
+                            <select id="filtroEstadoProceso" class="select" aria-label="Filtrar por estado del proceso">
+                                <option value="">Todos los estados</option>
+                                <option value="InteresRecibido">Interés recibido</option>
+                                <option value="SolicitarDatos">Solicitar datos</option>
+                                <option value="ValidarDonativo">Validar donativo</option>
+                                <option value="ReciboEmitido">Recibo emitido</option>
+                                <option value="Concluido">Concluido</option>
+                                <option value="Inconsistencia">Inconsistencia</option>
+                            </select>
+                            <label class="check">
+                                <input type="checkbox" id="filtroReciboPendiente"> Solo recibos pendientes
+                            </label>
+                        </div>
+                        <button type="button" class="btn btn-primario" id="btnNuevaDonacion" data-abrir="modalDonacion">
+                            <span data-icon="plus"></span> Nueva donación
+                        </button>
+                    </div>
+
+                    <div class="tabla-wrap">
+                        <table class="tabla" id="tablaDonaciones">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Donante</th>
+                                    <th class="num">Monto</th>
+                                    <th>Canal</th>
+                                    <th>Estado del proceso</th>
+                                    <th>Requiere recibo</th>
+                                    <th>Recibo emitido</th>
+                                    <th>Fecha</th>
+                                    <th><span class="solo-lectores">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyDonaciones">
+                                <tr data-id="1">
+                                    <td>1</td><td class="principal">Ana López</td><td class="num">$25.00</td><td>PayPal</td>
+                                    <td><span class="badge b-ok">Concluido</span></td>
+                                    <td>No</td><td>No</td><td>12/10/2026</td>
+                                    <td><div class="acciones">
+                                        <button type="button" class="btn-icono btn-editar" data-abrir="modalDonacion" aria-label="Editar donación 1"><span data-icon="edit"></span></button>
+                                        <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar donación 1"><span data-icon="trash"></span></button>
+                                    </div></td>
+                                </tr>
+                                <tr data-id="2">
+                                    <td>2</td><td class="principal">Ana López</td><td class="num">$30.00</td><td>Correo</td>
+                                    <td><span class="badge b-celeste">Interés recibido</span></td>
+                                    <td>Sí</td><td>No</td><td>12/10/2026</td>
+                                    <td><div class="acciones">
+                                        <button type="button" class="btn-icono btn-editar" data-abrir="modalDonacion" aria-label="Editar donación 2"><span data-icon="edit"></span></button>
+                                        <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar donación 2"><span data-icon="trash"></span></button>
+                                    </div></td>
+                                </tr>
+                                <tr data-id="3">
+                                    <td>3</td><td class="principal">Luis Pérez</td><td class="num">$75.50</td><td>Transferencia</td>
+                                    <td><span class="badge b-violeta">Validar donativo</span></td>
+                                    <td>Sí</td><td>No</td><td>12/10/2026</td>
+                                    <td><div class="acciones">
+                                        <button type="button" class="btn-icono btn-editar" data-abrir="modalDonacion" aria-label="Editar donación 3"><span data-icon="edit"></span></button>
+                                        <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar donación 3"><span data-icon="trash"></span></button>
+                                    </div></td>
+                                </tr>
+                                <tr data-id="4">
+                                    <td>4</td><td class="principal">María Gómez</td><td class="num">$150.00</td><td>Transferencia</td>
+                                    <td><span class="badge b-azul">Recibo emitido</span></td>
+                                    <td>Sí</td><td>Sí</td><td>12/10/2026</td>
+                                    <td><div class="acciones">
+                                        <button type="button" class="btn-icono btn-editar" data-abrir="modalDonacion" aria-label="Editar donación 4"><span data-icon="edit"></span></button>
+                                        <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar donación 4"><span data-icon="trash"></span></button>
+                                    </div></td>
+                                </tr>
+                                <tr data-id="5">
+                                    <td>5</td><td class="principal">María Gómez</td><td class="num">$120.00</td><td>WhatsApp</td>
+                                    <td><span class="badge b-dorado">Solicitar datos</span></td>
+                                    <td>Sí</td><td>No</td><td>12/10/2026</td>
+                                    <td><div class="acciones">
+                                        <button type="button" class="btn-icono btn-editar" data-abrir="modalDonacion" aria-label="Editar donación 5"><span data-icon="edit"></span></button>
+                                        <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar donación 5"><span data-icon="trash"></span></button>
+                                    </div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tabla-pie"><span>Mostrando 5 de 5 donaciones</span></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ============ Ventana: donante ============ -->
+<div class="overlay" id="modalDonante" role="dialog" aria-modal="true" aria-labelledby="tituloModalDonante">
+    <div class="modal">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloModalDonante">Donante</h2>
+                <p>Los datos fiscales solo se necesitan si el donante pide recibo.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <form id="formDonante" data-demo>
+            <div class="modal-cuerpo">
+                <input type="hidden" id="DonanteID" name="DonanteID">
+                <div class="form-grid">
+                    <div class="campo">
+                        <label for="Nombre">Nombre <span class="req">*</span></label>
+                        <input class="input" type="text" id="Nombre" name="Nombre" required>
+                    </div>
+                    <div class="campo">
+                        <label for="Apellido">Apellido <span class="req">*</span></label>
+                        <input class="input" type="text" id="Apellido" name="Apellido" required>
+                    </div>
+                    <div class="campo">
+                        <label for="Correo">Correo <span class="req">*</span></label>
+                        <input class="input" type="email" id="Correo" name="Correo" required placeholder="nombre@correo.com">
+                    </div>
+                    <div class="campo">
+                        <label for="Telefono">Teléfono</label>
+                        <input class="input" type="tel" id="Telefono" name="Telefono" placeholder="5551110000">
+                    </div>
+                    <div class="campo completo">
+                        <label for="NivelContribuyente">Nivel de contribuyente</label>
+                        <select class="select" id="NivelContribuyente" name="NivelContribuyente">
+                            <option value="Semilla">Semilla</option>
+                            <option value="Maceta">Maceta</option>
+                            <option value="Árbol">Árbol</option>
+                        </select>
+                        <span class="ayuda">Sugerencia del sistema: menos de $50 Semilla, menos de $100 Maceta, de $100 en adelante Árbol.</span>
+                    </div>
+                </div>
+
+                <div class="seccion-form">
+                    <h3>Datos fiscales (opcional)</h3>
+                    <p>Para emitir recibo deducible.</p>
+                    <div class="form-grid">
+                        <div class="campo completo">
+                            <label for="RazonSocial">Razón social</label>
+                            <input class="input" type="text" id="RazonSocial" name="RazonSocial">
+                        </div>
+                        <div class="campo">
+                            <label for="RFC">RFC</label>
+                            <input class="input" type="text" id="RFC" name="RFC" maxlength="13" style="text-transform: uppercase;" placeholder="XXXX000000XXX">
+                        </div>
+                        <div class="campo">
+                            <label for="RegimenFiscal">Régimen fiscal</label>
+                            <input class="input" type="text" id="RegimenFiscal" name="RegimenFiscal" maxlength="3" placeholder="612">
+                        </div>
+                        <div class="campo">
+                            <label for="CodigoPostal">Código postal</label>
+                            <input class="input" type="text" id="CodigoPostal" name="CodigoPostal" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="06600">
+                        </div>
+                        <div class="campo">
+                            <label for="UsoCFDI">Uso de CFDI</label>
+                            <input class="input" type="text" id="UsoCFDI" name="UsoCFDI" maxlength="4" placeholder="G03">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-pie">
+                <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="btn btn-primario" id="btnGuardarDonante">Guardar donante</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ Ventana: donación ============ -->
+<div class="overlay" id="modalDonacion" role="dialog" aria-modal="true" aria-labelledby="tituloModalDonacion">
+    <div class="modal">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloModalDonacion">Donación</h2>
+                <p>La fecha se registra automáticamente.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <form id="formDonacion" data-demo>
+            <div class="modal-cuerpo">
+                <input type="hidden" id="DonacionID" name="DonacionID">
+                <div class="form-grid">
+                    <div class="campo completo">
+                        <label for="DonanteID_donacion">Donante <span class="req">*</span></label>
+                        <!-- value = DonanteID. Emi: llena estas opciones con los donantes de la API -->
+                        <select class="select" id="DonanteID_donacion" name="DonanteID" required>
+                            <option value="">Selecciona un donante</option>
+                            <option value="1">Ana López</option>
+                            <option value="2">Luis Pérez</option>
+                            <option value="3">María Gómez</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="Monto">Monto <span class="req">*</span></label>
+                        <input class="input" type="number" id="Monto" name="Monto" min="0.01" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="campo">
+                        <label for="Canal">Canal</label>
+                        <select class="select" id="Canal" name="Canal">
+                            <option value="PayPal">PayPal</option>
+                            <option value="Correo">Correo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                        </select>
+                    </div>
+                    <div class="campo completo">
+                        <label for="EstadoProceso">Estado del proceso</label>
+                        <select class="select" id="EstadoProceso" name="EstadoProceso">
+                            <option value="InteresRecibido">Interés recibido</option>
+                            <option value="SolicitarDatos">Solicitar datos</option>
+                            <option value="ValidarDonativo">Validar donativo</option>
+                            <option value="ReciboEmitido">Recibo emitido</option>
+                            <option value="Concluido">Concluido</option>
+                            <option value="Inconsistencia">Inconsistencia</option>
+                        </select>
+                    </div>
+                    <label class="check">
+                        <input type="checkbox" id="RequiereRecibo" name="RequiereRecibo" value="1"> Requiere recibo
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="ReciboEmitido" name="ReciboEmitido" value="1"> Recibo ya emitido
+                    </label>
+                </div>
+            </div>
+            <div class="modal-pie">
+                <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="btn btn-primario" id="btnGuardarDonacion">Guardar donación</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ Ventana: confirmar eliminación ============ -->
+<div class="overlay" id="modalEliminar" role="dialog" aria-modal="true" aria-labelledby="tituloEliminar">
+    <div class="modal chico">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloEliminar">¿Eliminar registro?</h2>
+                <p>Esta acción no se puede deshacer.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <div class="modal-pie" style="border-top:0;">
+            <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+            <button type="button" class="btn btn-peligro" id="btnConfirmarEliminar">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/ui.js"></script>
+<script src="js/layout.js"></script>
+
+</body>
+</html>

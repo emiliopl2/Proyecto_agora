@@ -1,46 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ágora - panel principal</title>
+    <link rel="icon" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/agora.css">
 </head>
+<body data-pagina="dashboard" data-titulo="Inicio" data-subtitulo="Resumen general de Ágora">
 
-<body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center">
+<div class="app-shell">
+    <aside id="sidebar" class="sidebar"></aside>
 
-<div class="bg-slate-8000 p-8 rounded-xl shadow-xl text-center border border-slate-700 w-96">
-    <h1 class="text-3xl font-bold mb-2">¡Bienvenido!</h1>
-    <p id="nombreUsuario" class="text-indigo-400 text-lg font-medum mb-"></p>
-    <p id="rolUsuario" class="text-slate-400 text-sm mv-6"></p>
+    <div class="app-main">
+        <header id="topbar" class="topbar"></header>
 
-    <button onclick="cerrarSesion()"
-        class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-500 transition duration-200">
-        Cerrar Sesión
-    </button> 
+        <main id="contenido" class="contenido">
+
+            <!-- Bienvenida: conserva los ids nombreUsuario y rolUsuario del dashboard original -->
+            <section class="bienvenida card">
+                <img src="img/logo.png" alt="">
+                <div>
+                    <h2>¡Bienvenido!</h2>
+                    <p id="nombreUsuario" class="usuario"></p>
+                    <p id="rolUsuario" class="rol"></p>
+                </div>
+            </section>
+
+            <!-- Indicadores (datos de ejemplo; salen de las consultas 2.2, 4.1, 3.1 y 5.1 del script SQL) -->
+            <section class="grid cols-4" aria-label="Indicadores">
+                <a class="card kpi" href="donadores.html" id="kpiRecibos">
+                    <span class="kpi-icono t-rosa"><span data-icon="heart"></span></span>
+                    <div><div class="kpi-valor">3</div><div class="kpi-texto">Recibos pendientes de emitir</div></div>
+                </a>
+                <a class="card kpi" href="convocatorias.html" id="kpiConvocatorias">
+                    <span class="kpi-icono t-violeta"><span data-icon="file"></span></span>
+                    <div><div class="kpi-valor">2</div><div class="kpi-texto">Convocatorias abiertas</div></div>
+                </a>
+                <div class="card kpi" id="kpiDocumentos">
+                    <span class="kpi-icono t-dorado"><span data-icon="alert"></span></span>
+                    <div><div class="kpi-valor">2</div><div class="kpi-texto">Documentos vencidos o por vencer</div></div>
+                </div>
+                <a class="card kpi" href="alianzas.html" id="kpiAlianzas">
+                    <span class="kpi-icono t-ok"><span data-icon="building"></span></span>
+                    <div><div class="kpi-valor">1</div><div class="kpi-texto">Alianzas aceptadas</div></div>
+                </a>
+            </section>
+
+            <div class="grid cols-main">
+
+                <!-- Requiere atención -->
+                <section class="card" aria-labelledby="tAtencion">
+                    <div class="card-cuerpo">
+                        <h2 class="card-titulo" id="tAtencion">Requiere atención</h2>
+                        <p class="card-sub">Vencimientos y cierres más cercanos</p>
+                    </div>
+                    <ul class="avisos" id="listaAvisos">
+                        <li class="aviso">
+                            <span class="icono t-rosa"><span data-icon="alert"></span></span>
+                            <div class="info"><strong>Opinión de cumplimiento SAT</strong><span>Documento institucional · venció hace 10 días</span></div>
+                            <span class="badge b-err">Vencido</span>
+                        </li>
+                        <li class="aviso">
+                            <span class="icono t-dorado"><span data-icon="clock"></span></span>
+                            <div class="info"><strong>Reforestación Urbana</strong><span>Convocatoria · cierra en 10 días</span></div>
+                            <span class="badge b-dorado">Cierra pronto</span>
+                        </li>
+                        <li class="aviso">
+                            <span class="icono t-dorado"><span data-icon="clock"></span></span>
+                            <div class="info"><strong>Constancia de situación fiscal</strong><span>Documento institucional · vence en 20 días</span></div>
+                            <span class="badge b-dorado">Por renovar</span>
+                        </li>
+                        <li class="aviso">
+                            <span class="icono t-azul"><span data-icon="clock"></span></span>
+                            <div class="info"><strong>Fondo Verde Comunitario</strong><span>Convocatoria · cierra en 25 días</span></div>
+                            <span class="badge b-violeta">Validar requisitos</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Accesos rápidos -->
+                <section class="card" aria-labelledby="tAccesos">
+                    <div class="card-cuerpo" style="display:flex; flex-direction:column; gap:14px;">
+                        <div>
+                            <h2 class="card-titulo" id="tAccesos">Accesos rápidos</h2>
+                            <p class="card-sub">Entra directo a un módulo</p>
+                        </div>
+                        <a class="acceso" href="donadores.html">
+                            <span class="kpi-icono t-rosa" style="width:40px;height:40px;"><span data-icon="heart"></span></span>
+                            <div><strong>Donadores</strong><span>Donantes y donaciones</span></div>
+                        </a>
+                        <a class="acceso" href="convocatorias.html">
+                            <span class="kpi-icono t-violeta" style="width:40px;height:40px;"><span data-icon="file"></span></span>
+                            <div><strong>Convocatorias</strong><span>Fondos y postulaciones</span></div>
+                        </a>
+                        <a class="acceso" href="alianzas.html">
+                            <span class="kpi-icono t-celeste" style="width:40px;height:40px;"><span data-icon="building"></span></span>
+                            <div><strong>Alianzas</strong><span>Empresas y bitácora de contacto</span></div>
+                        </a>
+                        <a class="acceso" href="redondeo.html">
+                            <span class="kpi-icono t-dorado" style="width:40px;height:40px;"><span data-icon="coin"></span></span>
+                            <div><strong>Redondeo</strong><span>Comercios con redondeo en caja</span></div>
+                        </a>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
 </div>
 
-<script>
-
-    //Carga datos fuardados al iniciar sesión 
-    const usuarioGuardado = localStorage.getItem('usuario');
-    if(!usuarioGuardado) {
-        // si no hay sesión, regresar al login
-        window.location.href = "index.html"
-    } else {
-        const user = JSON.parse(usuarioGuardado);
-        document.getElementById('nombreUsuario').textContent = user.nombre;
-        document.getElementById('rolUsuario').textContent = `Rol: ${user.rol} (${user.correo})`;
-    }
-
-    function cerrarSesion() {
-        localStorage.removeItem('usuario');
-        window.location.href = 'index.html';
-    }
-
-</script>
+<script src="js/ui.js"></script>
+<script src="js/layout.js"></script>
 
 </body>
-
 </html>

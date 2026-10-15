@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ágora - Alianzas</title>
+    <link rel="icon" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/agora.css">
+</head>
+<body data-pagina="alianzas" data-titulo="Alianzas" data-subtitulo="Empresas prospecto y su bitácora de contacto">
+
+<!--
+  NOTAS PARA EMI (conexión con el backend)
+  - Tablas: EmpresasProspectos (la tabla principal) y BitacoraEmpresas (el panel lateral).
+  - name="" de cada campo = nombre de la columna en la BD. Los <option value=""> son los valores reales de la BD.
+  - FechaInteraccion no está en el formulario de bitácora (el script SQL no la manda, la BD la llena sola).
+  - UsuarioID de la bitácora NO es un campo: debe salir del usuario con sesión iniciada.
+    Para eso, la respuesta de /api/login dentro de "usuario" tendría que traer también el ID del usuario.
+  - El campo hidden EmpresaID del formulario de bitácora se llena al abrir el panel de una empresa.
+  - El filtro "Solo alineadas éticamente" equivale a la consulta 5.1 (AlineacionEtica = 1).
+  - Las filas son de ejemplo: cada <tr> lleva data-id con el ID del registro.
+  - Los formularios tienen data-demo para que no recarguen la página; quítalo cuando los conectes.
+-->
+
+<div class="app-shell">
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <div class="app-main">
+        <header id="topbar" class="topbar"></header>
+
+        <main id="contenido" class="contenido">
+
+            <!-- Indicadores -->
+            <section class="grid cols-3" aria-label="Resumen">
+                <div class="card kpi">
+                    <span class="kpi-icono t-azul"><span data-icon="building"></span></span>
+                    <div><div class="kpi-valor">4</div><div class="kpi-texto">Empresas prospecto</div></div>
+                </div>
+                <div class="card kpi">
+                    <span class="kpi-icono t-violeta"><span data-icon="heart"></span></span>
+                    <div><div class="kpi-valor">3</div><div class="kpi-texto">Alineadas éticamente</div></div>
+                </div>
+                <div class="card kpi">
+                    <span class="kpi-icono t-ok"><span data-icon="check"></span></span>
+                    <div><div class="kpi-valor">1</div><div class="kpi-texto">Alianzas aceptadas</div></div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-cuerpo toolbar">
+                    <div class="filtros">
+                        <div class="buscador">
+                            <span data-icon="search"></span>
+                            <input type="search" id="buscarEmpresa" class="input" placeholder="Buscar empresa" aria-label="Buscar empresa">
+                        </div>
+                        <select id="filtroTipoAlianza" class="select" aria-label="Filtrar por tipo de alianza">
+                            <option value="">Todos los tipos</option>
+                            <option value="Bosque Corporativo">Bosque Corporativo</option>
+                            <option value="Redondeo">Redondeo</option>
+                            <option value="Financiamiento">Financiamiento</option>
+                        </select>
+                        <select id="filtroEstatus" class="select" aria-label="Filtrar por estatus">
+                            <option value="">Todos los estatus</option>
+                            <option value="SinContacto">Sin contacto</option>
+                            <option value="Contactadas">Contactada</option>
+                            <option value="Aceptaron">Aceptó</option>
+                            <option value="Descartada">Descartada</option>
+                        </select>
+                        <label class="check">
+                            <input type="checkbox" id="filtroSoloAlineadas"> Solo alineadas éticamente
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-primario" id="btnNuevaEmpresa" data-abrir="modalEmpresa">
+                        <span data-icon="plus"></span> Nueva empresa
+                    </button>
+                </div>
+
+                <div class="tabla-wrap">
+                    <table class="tabla" id="tablaEmpresas">
+                        <thead>
+                            <tr>
+                                <th>Empresa</th>
+                                <th>Tipo de alianza</th>
+                                <th>Alineación ética</th>
+                                <th>Estatus</th>
+                                <th>Enlace de contacto</th>
+                                <th>Interacciones</th>
+                                <th><span class="solo-lectores">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyEmpresas">
+                            <tr data-id="1">
+                                <td class="principal">EcoVerde S.A.</td>
+                                <td><span class="badge b-ok">Bosque Corporativo</span></td>
+                                <td><span class="badge b-ok">Alineada</span></td>
+                                <td><span class="badge b-celeste">Contactada</span></td>
+                                <td>rse@ecoverde.com</td>
+                                <td>2<span class="secundario">última: 12/10/2026</span></td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-bitacora" data-abrir="panelBitacora" aria-label="Ver bitácora de EcoVerde S.A."><span data-icon="message"></span></button>
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalEmpresa" aria-label="Editar EcoVerde S.A."><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar EcoVerde S.A."><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                            <tr data-id="2">
+                                <td class="principal">SuperMercados Sol</td>
+                                <td><span class="badge b-dorado">Redondeo</span></td>
+                                <td><span class="badge b-ok">Alineada</span></td>
+                                <td><span class="badge b-ok">Aceptó</span></td>
+                                <td>Directora RSE - Ana Torres</td>
+                                <td>1<span class="secundario">última: 12/10/2026</span></td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-bitacora" data-abrir="panelBitacora" aria-label="Ver bitácora de SuperMercados Sol"><span data-icon="message"></span></button>
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalEmpresa" aria-label="Editar SuperMercados Sol"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar SuperMercados Sol"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                            <tr data-id="4">
+                                <td class="principal">Viveros MX</td>
+                                <td><span class="badge b-violeta">Financiamiento</span></td>
+                                <td><span class="badge b-ok">Alineada</span></td>
+                                <td><span class="badge b-gris">Sin contacto</span></td>
+                                <td>contacto@viverosmx.com</td>
+                                <td>0<span class="secundario">sin interacciones</span></td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-bitacora" data-abrir="panelBitacora" aria-label="Ver bitácora de Viveros MX"><span data-icon="message"></span></button>
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalEmpresa" aria-label="Editar Viveros MX"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar Viveros MX"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                            <tr data-id="3">
+                                <td class="principal">PetroNorte</td>
+                                <td><span class="badge b-violeta">Financiamiento</span></td>
+                                <td><span class="badge b-err">No alineada</span></td>
+                                <td><span class="badge b-err">Descartada</span></td>
+                                <td>—</td>
+                                <td>0<span class="secundario">sin interacciones</span></td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-bitacora" data-abrir="panelBitacora" aria-label="Ver bitácora de PetroNorte"><span data-icon="message"></span></button>
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalEmpresa" aria-label="Editar PetroNorte"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar PetroNorte"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tabla-pie"><span>Mostrando 4 de 4 empresas</span></div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ============ Ventana: empresa ============ -->
+<div class="overlay" id="modalEmpresa" role="dialog" aria-modal="true" aria-labelledby="tituloModalEmpresa">
+    <div class="modal">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloModalEmpresa">Empresa prospecto</h2>
+                <p>Datos de la empresa y tipo de alianza que se busca.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <form id="formEmpresa" data-demo>
+            <div class="modal-cuerpo">
+                <input type="hidden" id="EmpresaID" name="EmpresaID">
+                <div class="form-grid">
+                    <div class="campo completo">
+                        <label for="NombreEmpresa">Nombre de la empresa <span class="req">*</span></label>
+                        <input class="input" type="text" id="NombreEmpresa" name="NombreEmpresa" required>
+                    </div>
+                    <div class="campo">
+                        <label for="TipoAlianza">Tipo de alianza</label>
+                        <select class="select" id="TipoAlianza" name="TipoAlianza">
+                            <option value="Bosque Corporativo">Bosque Corporativo</option>
+                            <option value="Redondeo">Redondeo</option>
+                            <option value="Financiamiento">Financiamiento</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="Estatus">Estatus</label>
+                        <select class="select" id="Estatus" name="Estatus">
+                            <option value="SinContacto">Sin contacto</option>
+                            <option value="Contactadas">Contactada</option>
+                            <option value="Aceptaron">Aceptó</option>
+                            <option value="Descartada">Descartada</option>
+                        </select>
+                    </div>
+                    <div class="campo completo">
+                        <label for="EnlaceContacto">Enlace de contacto</label>
+                        <input class="input" type="text" id="EnlaceContacto" name="EnlaceContacto" placeholder="Correo o nombre de la persona de contacto">
+                    </div>
+                    <label class="check completo">
+                        <input type="checkbox" id="AlineacionEtica" name="AlineacionEtica" value="1"> Alineada éticamente con los valores de Ágora
+                    </label>
+                </div>
+            </div>
+            <div class="modal-pie">
+                <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="btn btn-primario" id="btnGuardarEmpresa">Guardar empresa</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ Panel lateral: bitácora de la empresa ============ -->
+<div class="overlay lateral" id="panelBitacora" role="dialog" aria-modal="true" aria-labelledby="tituloBitacora">
+    <div class="panel-lateral">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloBitacora">Bitácora · <span id="bitacoraEmpresa">EcoVerde S.A.</span></h2>
+                <p>Historial de interacciones con la empresa.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <div class="modal-cuerpo">
+            <ul class="linea" id="listaBitacora">
+                <li>
+                    <div class="cuando">12/10/2026 · <span class="badge b-azul">Reunión</span></div>
+                    <div class="detalle">Reunión virtual para presentar el programa Bosque Corporativo.</div>
+                    <div class="quien">Registró: Sofía Herrera</div>
+                </li>
+                <li>
+                    <div class="cuando">12/10/2026 · <span class="badge b-celeste">LinkedIn</span></div>
+                    <div class="detalle">Primer mensaje enviado al directivo de RSE.</div>
+                    <div class="quien">Registró: Sofía Herrera</div>
+                </li>
+            </ul>
+
+            <form id="formBitacora" data-demo class="seccion-form">
+                <h3>Registrar interacción</h3>
+                <p>Queda guardada con tu usuario y la fecha de hoy.</p>
+                <input type="hidden" id="EmpresaID_bitacora" name="EmpresaID">
+                <div class="form-grid">
+                    <div class="campo completo">
+                        <label for="Canal">Canal</label>
+                        <select class="select" id="Canal" name="Canal">
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Reunion">Reunión</option>
+                            <option value="Correo">Correo</option>
+                        </select>
+                    </div>
+                    <div class="campo completo">
+                        <label for="DetalleInteraccion">Detalle <span class="req">*</span></label>
+                        <textarea class="textarea" id="DetalleInteraccion" name="DetalleInteraccion" required placeholder="¿Qué se habló o se envió?"></textarea>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+                    <button type="submit" class="btn btn-primario" id="btnGuardarInteraccion">Guardar interacción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============ Ventana: confirmar eliminación ============ -->
+<div class="overlay" id="modalEliminar" role="dialog" aria-modal="true" aria-labelledby="tituloEliminar">
+    <div class="modal chico">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloEliminar">¿Eliminar registro?</h2>
+                <p>Esta acción no se puede deshacer.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <div class="modal-pie" style="border-top:0;">
+            <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+            <button type="button" class="btn btn-peligro" id="btnConfirmarEliminar">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/ui.js"></script>
+<script src="js/layout.js"></script>
+
+</body>
+</html>

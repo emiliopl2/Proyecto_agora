@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ágora - Convocatorias</title>
+    <link rel="icon" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/agora.css">
+</head>
+<body data-pagina="convocatorias" data-titulo="Convocatorias" data-subtitulo="Fondos y postulaciones">
+
+<!--
+  NOTAS PARA EMI (conexión con el backend)
+  - Tabla: Convocatorias.
+  - name="" de cada campo = nombre de la columna en la BD. Los <option value=""> son los valores reales de la BD.
+  - Los 4 recuadros de arriba son el resumen por estado (consulta 4.2 del script SQL).
+  - Los días restantes ("en 25 días") se calculan con FechaCierre - hoy (consulta 4.1).
+  - El filtro "Solo abiertas" equivale a la consulta 4.1: Estado distinto de Descartada/Postulada y FechaCierre >= hoy.
+  - Las filas son de ejemplo: cada <tr> lleva data-id con el ID del registro.
+  - El formulario tiene data-demo para que no recargue la página; quítalo cuando lo conectes.
+-->
+
+<div class="app-shell">
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <div class="app-main">
+        <header id="topbar" class="topbar"></header>
+
+        <main id="contenido" class="contenido">
+
+            <!-- Resumen por estado -->
+            <section class="grid cols-4" aria-label="Resumen por estado">
+                <div class="card etapa e-violeta">
+                    <span class="valor">1</span><span class="texto">Validar requisitos</span>
+                </div>
+                <div class="card etapa e-dorado">
+                    <span class="valor">1</span><span class="texto">Compilar expediente</span>
+                </div>
+                <div class="card etapa e-ok">
+                    <span class="valor">1</span><span class="texto">Postuladas</span>
+                </div>
+                <div class="card etapa e-gris">
+                    <span class="valor">1</span><span class="texto">Descartadas</span>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-cuerpo toolbar">
+                    <div class="filtros">
+                        <div class="buscador">
+                            <span data-icon="search"></span>
+                            <input type="search" id="buscarConvocatoria" class="input" placeholder="Buscar fondo o entidad" aria-label="Buscar convocatoria">
+                        </div>
+                        <select id="filtroEstado" class="select" aria-label="Filtrar por estado">
+                            <option value="">Todos los estados</option>
+                            <option value="ValidarRequisitos">Validar requisitos</option>
+                            <option value="CompilarExpediente">Compilar expediente</option>
+                            <option value="Postulada">Postulada</option>
+                            <option value="Descartada">Descartada</option>
+                        </select>
+                        <label class="check">
+                            <input type="checkbox" id="filtroSoloAbiertas"> Solo abiertas
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-primario" id="btnNuevaConvocatoria" data-abrir="modalConvocatoria">
+                        <span data-icon="plus"></span> Nueva convocatoria
+                    </button>
+                </div>
+
+                <div class="tabla-wrap">
+                    <table class="tabla" id="tablaConvocatorias">
+                        <thead>
+                            <tr>
+                                <th>Fondo</th>
+                                <th>Entidad financiera</th>
+                                <th>Estado</th>
+                                <th>Cierre</th>
+                                <th>Aprobada por Dirección</th>
+                                <th>Observaciones</th>
+                                <th><span class="solo-lectores">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyConvocatorias">
+                            <tr data-id="2">
+                                <td class="principal">Reforestación Urbana</td>
+                                <td>Gobierno de la Ciudad</td>
+                                <td><span class="badge b-dorado">Compilar expediente</span></td>
+                                <td>22/10/2026<span class="plazo urgente">en 10 días</span></td>
+                                <td><span class="badge b-ok">Sí</span></td>
+                                <td>Reunir opinión de cumplimiento vigente.</td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalConvocatoria" aria-label="Editar Reforestación Urbana"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar Reforestación Urbana"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                            <tr data-id="1">
+                                <td class="principal">Fondo Verde Comunitario</td>
+                                <td>Fundación Bosques</td>
+                                <td><span class="badge b-violeta">Validar requisitos</span></td>
+                                <td>06/11/2026<span class="plazo pronto">en 25 días</span></td>
+                                <td><span class="badge b-ok">Sí</span></td>
+                                <td>Falta carta de intención firmada por la dirección.</td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalConvocatoria" aria-label="Editar Fondo Verde Comunitario"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar Fondo Verde Comunitario"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                            <tr data-id="3">
+                                <td class="principal">Impacto Social 2026</td>
+                                <td>Banco Aliado</td>
+                                <td><span class="badge b-ok">Postulada</span></td>
+                                <td>07/10/2026<span class="plazo">hace 5 días</span></td>
+                                <td><span class="badge b-ok">Sí</span></td>
+                                <td>Postulación enviada, en espera de resultados.</td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalConvocatoria" aria-label="Editar Impacto Social 2026"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar Impacto Social 2026"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                            <tr data-id="4">
+                                <td class="principal">Fondo Internacional X</td>
+                                <td>Fundación Extranjera</td>
+                                <td><span class="badge b-gris">Descartada</span></td>
+                                <td>11/12/2026<span class="plazo">en 60 días</span></td>
+                                <td><span class="badge b-gris">No</span></td>
+                                <td>No cumple requisitos geográficos.</td>
+                                <td><div class="acciones">
+                                    <button type="button" class="btn-icono btn-editar" data-abrir="modalConvocatoria" aria-label="Editar Fondo Internacional X"><span data-icon="edit"></span></button>
+                                    <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar Fondo Internacional X"><span data-icon="trash"></span></button>
+                                </div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tabla-pie"><span>Mostrando 4 de 4 convocatorias · ordenadas por cierre más próximo</span></div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ============ Ventana: convocatoria ============ -->
+<div class="overlay" id="modalConvocatoria" role="dialog" aria-modal="true" aria-labelledby="tituloModalConvocatoria">
+    <div class="modal">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloModalConvocatoria">Convocatoria</h2>
+                <p>Registra el fondo y en qué etapa va.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <form id="formConvocatoria" data-demo>
+            <div class="modal-cuerpo">
+                <input type="hidden" id="ConvocatoriaID" name="ConvocatoriaID">
+                <div class="form-grid">
+                    <div class="campo">
+                        <label for="NombreFondo">Nombre del fondo <span class="req">*</span></label>
+                        <input class="input" type="text" id="NombreFondo" name="NombreFondo" required>
+                    </div>
+                    <div class="campo">
+                        <label for="EntidadFinanciera">Entidad financiera <span class="req">*</span></label>
+                        <input class="input" type="text" id="EntidadFinanciera" name="EntidadFinanciera" required>
+                    </div>
+                    <div class="campo">
+                        <label for="Estado">Estado</label>
+                        <select class="select" id="Estado" name="Estado">
+                            <option value="ValidarRequisitos">Validar requisitos</option>
+                            <option value="CompilarExpediente">Compilar expediente</option>
+                            <option value="Postulada">Postulada</option>
+                            <option value="Descartada">Descartada</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="FechaCierre">Fecha de cierre</label>
+                        <input class="input" type="date" id="FechaCierre" name="FechaCierre">
+                    </div>
+                    <label class="check completo">
+                        <input type="checkbox" id="AprobadaDireccion" name="AprobadaDireccion" value="1"> Aprobada por Dirección
+                    </label>
+                    <div class="campo completo">
+                        <label for="Observaciones">Observaciones</label>
+                        <textarea class="textarea" id="Observaciones" name="Observaciones" placeholder="Ej. Falta carta de intención firmada."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-pie">
+                <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="btn btn-primario" id="btnGuardarConvocatoria">Guardar convocatoria</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ Ventana: confirmar eliminación ============ -->
+<div class="overlay" id="modalEliminar" role="dialog" aria-modal="true" aria-labelledby="tituloEliminar">
+    <div class="modal chico">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloEliminar">¿Eliminar registro?</h2>
+                <p>Esta acción no se puede deshacer.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <div class="modal-pie" style="border-top:0;">
+            <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+            <button type="button" class="btn btn-peligro" id="btnConfirmarEliminar">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/ui.js"></script>
+<script src="js/layout.js"></script>
+
+</body>
+</html>
