@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ágora - Redondeo</title>
+    <link rel="icon" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/agora.css">
+</head>
+<body data-pagina="redondeo" data-titulo="Redondeo" data-subtitulo="Comercios con redondeo en caja">
+
+<!--
+  NOTAS PARA EMI (conexión con el backend)
+  - OJO, SUPUESTO: en la BD no hay una tabla propia de redondeo. Solo existe TipoAlianza = 'Redondeo'
+    dentro de EmpresasProspectos (ej. SuperMercados Sol). Por eso esta pantalla es un tablero de esas empresas,
+    filtradas por TipoAlianza = 'Redondeo' y agrupadas por Estatus.
+    Si el módulo necesita guardar más cosas (montos recaudados, sucursales, etc.), hay que pedirle a Jafas y Luis
+    la tabla y ajusto la pantalla.
+  - Columnas del tablero: Estatus = SinContacto | Contactadas | Aceptaron.
+  - El formulario de empresa manda TipoAlianza = 'Redondeo' en un campo oculto.
+  - La bitácora usa las mismas columnas y reglas que en alianzas.html (UsuarioID sale de la sesión).
+  - Las tarjetas son de ejemplo: cada una lleva data-id con el EmpresaID.
+  - Los formularios tienen data-demo para que no recarguen la página; quítalo cuando los conectes.
+-->
+
+<div class="app-shell">
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <div class="app-main">
+        <header id="topbar" class="topbar"></header>
+
+        <main id="contenido" class="contenido">
+
+            <section class="grid cols-3" aria-label="Resumen">
+                <div class="card kpi">
+                    <span class="kpi-icono t-dorado"><span data-icon="coin"></span></span>
+                    <div><div class="kpi-valor">1</div><div class="kpi-texto">Comercios con redondeo</div></div>
+                </div>
+                <div class="card kpi">
+                    <span class="kpi-icono t-celeste"><span data-icon="message"></span></span>
+                    <div><div class="kpi-valor">0</div><div class="kpi-texto">En conversación</div></div>
+                </div>
+                <div class="card kpi">
+                    <span class="kpi-icono t-ok"><span data-icon="check"></span></span>
+                    <div><div class="kpi-valor">1</div><div class="kpi-texto">Aceptaron la propuesta</div></div>
+                </div>
+            </section>
+
+            <div class="toolbar">
+                <div class="buscador">
+                    <span data-icon="search"></span>
+                    <input type="search" id="buscarComercio" class="input" placeholder="Buscar comercio" aria-label="Buscar comercio">
+                </div>
+                <button type="button" class="btn btn-primario" id="btnNuevoComercio" data-abrir="modalComercio">
+                    <span data-icon="plus"></span> Nuevo comercio
+                </button>
+            </div>
+
+            <!-- Tablero por estatus -->
+            <section class="tablero" aria-label="Comercios por estatus">
+
+                <div class="columna" id="colSinContacto">
+                    <div class="columna-cab"><span>Sin contacto</span><span class="conteo">0</span></div>
+                    <div class="estado-vacio">Aún no hay comercios en esta etapa.</div>
+                </div>
+
+                <div class="columna" id="colContactadas">
+                    <div class="columna-cab"><span>Contactados</span><span class="conteo">0</span></div>
+                    <div class="estado-vacio">Aún no hay comercios en esta etapa.</div>
+                </div>
+
+                <div class="columna" id="colAceptaron">
+                    <div class="columna-cab"><span>Aceptaron</span><span class="conteo">1</span></div>
+
+                    <article class="tarjeta" data-id="2">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                            <h3>SuperMercados Sol</h3>
+                            <span class="badge b-ok">Alineada</span>
+                        </div>
+                        <p class="dato"><span data-icon="user"></span> Directora RSE - Ana Torres</p>
+                        <p class="dato"><span data-icon="message"></span> 1 interacción · última 12/10/2026</p>
+                        <div class="pie">
+                            <button type="button" class="btn btn-ghost btn-bitacora" data-abrir="panelBitacora">
+                                <span data-icon="message"></span> Bitácora
+                            </button>
+                            <div class="acciones">
+                                <button type="button" class="btn-icono btn-editar" data-abrir="modalComercio" aria-label="Editar SuperMercados Sol"><span data-icon="edit"></span></button>
+                                <button type="button" class="btn-icono peligro btn-eliminar" data-abrir="modalEliminar" aria-label="Eliminar SuperMercados Sol"><span data-icon="trash"></span></button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ============ Ventana: comercio ============ -->
+<div class="overlay" id="modalComercio" role="dialog" aria-modal="true" aria-labelledby="tituloModalComercio">
+    <div class="modal">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloModalComercio">Comercio con redondeo</h2>
+                <p>Tipo de alianza: Redondeo.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <form id="formComercio" data-demo>
+            <div class="modal-cuerpo">
+                <input type="hidden" id="EmpresaID" name="EmpresaID">
+                <input type="hidden" id="TipoAlianza" name="TipoAlianza" value="Redondeo">
+                <div class="form-grid">
+                    <div class="campo completo">
+                        <label for="NombreEmpresa">Nombre del comercio <span class="req">*</span></label>
+                        <input class="input" type="text" id="NombreEmpresa" name="NombreEmpresa" required>
+                    </div>
+                    <div class="campo completo">
+                        <label for="Estatus">Estatus</label>
+                        <select class="select" id="Estatus" name="Estatus">
+                            <option value="SinContacto">Sin contacto</option>
+                            <option value="Contactadas">Contactado</option>
+                            <option value="Aceptaron">Aceptó</option>
+                            <option value="Descartada">Descartado</option>
+                        </select>
+                    </div>
+                    <div class="campo completo">
+                        <label for="EnlaceContacto">Enlace de contacto</label>
+                        <input class="input" type="text" id="EnlaceContacto" name="EnlaceContacto" placeholder="Correo o nombre de la persona de contacto">
+                    </div>
+                    <label class="check completo">
+                        <input type="checkbox" id="AlineacionEtica" name="AlineacionEtica" value="1"> Alineado éticamente con los valores de Ágora
+                    </label>
+                </div>
+            </div>
+            <div class="modal-pie">
+                <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="btn btn-primario" id="btnGuardarComercio">Guardar comercio</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ Panel lateral: bitácora ============ -->
+<div class="overlay lateral" id="panelBitacora" role="dialog" aria-modal="true" aria-labelledby="tituloBitacora">
+    <div class="panel-lateral">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloBitacora">Bitácora · <span id="bitacoraEmpresa">SuperMercados Sol</span></h2>
+                <p>Historial de interacciones con el comercio.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <div class="modal-cuerpo">
+            <ul class="linea" id="listaBitacora">
+                <li>
+                    <div class="cuando">12/10/2026 · <span class="badge b-violeta">Correo</span></div>
+                    <div class="detalle">Aceptaron la propuesta de redondeo en caja.</div>
+                    <div class="quien">Registró: Laura Martínez</div>
+                </li>
+            </ul>
+
+            <form id="formBitacora" data-demo class="seccion-form">
+                <h3>Registrar interacción</h3>
+                <p>Queda guardada con tu usuario y la fecha de hoy.</p>
+                <input type="hidden" id="EmpresaID_bitacora" name="EmpresaID">
+                <div class="form-grid">
+                    <div class="campo completo">
+                        <label for="Canal">Canal</label>
+                        <select class="select" id="Canal" name="Canal">
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Reunion">Reunión</option>
+                            <option value="Correo">Correo</option>
+                        </select>
+                    </div>
+                    <div class="campo completo">
+                        <label for="DetalleInteraccion">Detalle <span class="req">*</span></label>
+                        <textarea class="textarea" id="DetalleInteraccion" name="DetalleInteraccion" required placeholder="¿Qué se habló o se envió?"></textarea>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+                    <button type="submit" class="btn btn-primario" id="btnGuardarInteraccion">Guardar interacción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============ Ventana: confirmar eliminación ============ -->
+<div class="overlay" id="modalEliminar" role="dialog" aria-modal="true" aria-labelledby="tituloEliminar">
+    <div class="modal chico">
+        <div class="modal-cab">
+            <div>
+                <h2 id="tituloEliminar">¿Eliminar registro?</h2>
+                <p>Esta acción no se puede deshacer.</p>
+            </div>
+            <button type="button" class="btn-icono" data-cerrar aria-label="Cerrar"><span data-icon="x"></span></button>
+        </div>
+        <div class="modal-pie" style="border-top:0;">
+            <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+            <button type="button" class="btn btn-peligro" id="btnConfirmarEliminar">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/ui.js"></script>
+<script src="js/layout.js"></script>
+
+</body>
+</html>
