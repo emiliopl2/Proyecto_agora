@@ -3,12 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\03_usuarios_y_permisos.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:03_usuarios_y_permisos.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\02_tablas_y_datos..sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:02_tablas_y_datos..sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\Pruebas\\02_tablas_y_datos.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Pruebas\\02_tablas_y_datos.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,26 +19,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "03_usuarios_y_permisos.sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (51))",
-              "DocumentMoniker": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\03_usuarios_y_permisos.sql",
-              "RelativeDocumentMoniker": "03_usuarios_y_permisos.sql",
-              "ToolTip": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\03_usuarios_y_permisos.sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (51))",
-              "RelativeToolTip": "03_usuarios_y_permisos.sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (51))",
+              "Title": "02_tablas_y_datos.sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (EMILIOACERP\\emili (51))",
+              "DocumentMoniker": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\Pruebas\\02_tablas_y_datos.sql",
+              "RelativeDocumentMoniker": "Pruebas\\02_tablas_y_datos.sql",
+              "ToolTip": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\Pruebas\\02_tablas_y_datos.sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (EMILIOACERP\\emili (51))",
+              "RelativeToolTip": "Pruebas\\02_tablas_y_datos.sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (EMILIOACERP\\emili (51))",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-10-11T03:40:50.306Z",
-              "EditorCaption": " - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (51))"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "02_tablas_y_datos..sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (101))",
-              "DocumentMoniker": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\02_tablas_y_datos..sql",
-              "RelativeDocumentMoniker": "02_tablas_y_datos..sql",
-              "ToolTip": "C:\\Users\\emili\\Desktop\\bd prueba\\agora_js\\SQL\\02_tablas_y_datos..sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (101))",
-              "RelativeToolTip": "02_tablas_y_datos..sql - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (101))",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-10-11T03:35:03.231Z",
-              "EditorCaption": " - EMILIOACERP\\SQLEXPRESS.agora_pruebas (sa (101))"
+              "WhenOpened": "2026-10-17T22:42:58.796Z",
+              "EditorCaption": " - EMILIOACERP\\SQLEXPRESS.agora_pruebas (EMILIOACERP\\emili (51))"
             }
           ]
         }

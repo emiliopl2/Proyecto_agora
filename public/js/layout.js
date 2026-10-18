@@ -102,5 +102,5 @@ function cerrarSesion() {
     var n = document.getElementById('nombreUsuario');
     var r = document.getElementById('rolUsuario');
     if (n) n.textContent = usuario.nombre || '';
-    if (r) r.textContent = 'Rol: ' + rolBonito + (usuario.correo ? ' (' + usuario.correo + ')' : '');
+    if (r) r.textContent = 'Rol: ' + rolBonito + (usuario.NombreCompleto ? ' (' + usuario.NombreCompleto + ')' : '');
 })();

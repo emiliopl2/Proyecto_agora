@@ -30,9 +30,18 @@ GO
 IF DATABASE_PRINCIPAL_ID('lector_agora') IS NULL
     CREATE ROLE [lector_agora];
 
--- Asignar permiso SELECT sobre las tablas requeridas
+-- Asignar permiso SELECt, UPDATE, DELETE sobre las tablas requeridas
 GRANT SELECT ON OBJECT::dbo.conexion_agora TO [lector_agora];
 GRANT SELECT ON OBJECT::dbo.accesos TO [lector_agora];
+GRANT SELECT ON OBJECT::dbo.Usuarios TO [lector agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.Donantes TO [lector_agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.Donaciones TO [lector_agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.ExpedienteInstitucional TO [lector_agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.Convocatorias TO [lector_agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.EmpresasProspectos TO [lector_agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.BitacoraEmpresas TO [lector_agora];
+GO
+
 GO
 
 -- Crear Usuarios de Base de Datos asociados a los Logins
@@ -52,19 +61,17 @@ GO
 USE agora_pruebas;
 GO
 
--- Simular el inicio de sesión de ConPrueba (IP remota 192.168.1.73)
+-- Simular el inicio de sesión de ConPrueba
 EXECUTE AS LOGIN = 'ConPrueba';
 
 -- Confirmar identidad activa
 SELECT SUSER_NAME() AS usuario_actual;
 
--- Consulta permitida (Debe funcionar)
-SELECT empresa, ip, puerto FROM dbo.conexion_agora;
-SELECT persona, usuario_db, ip_origen FROM dbo.accesos;
+-- Consultas SELECT (Ahora sí deben funcionar correctamente)
+SELECT TOP 5 NombreCompleto, Correo, Rol FROM dbo.Usuarios;
+SELECT TOP 5 Nombre, Apellido, Correo, NivelContribuyente FROM dbo.Donantes;
+SELECT TOP 5 DonacionID, Monto, EstadoProceso FROM dbo.Donaciones;
 
--- Intento de eliminación (Debe fallar por falta de permisos)
--- DELETE FROM dbo.conexion_agora WHERE 1 = 0;
-
--- Regresar al contexto del usuario principal (sa / administrador)
+-- Regresar al contexto del usuario administrador
 REVERT;
 GO
