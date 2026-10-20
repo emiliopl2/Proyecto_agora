@@ -44,21 +44,25 @@ const obtenerDonacionPorId = async (req, res) => {
 
 // POST: Registrar nueva donación
 const crearDonacion = async (req, res) => {
-    const { donanteId, monto, estadoProceso, canal, requiereRecibo, reciboEmitido } = req.body;
+    // Leemos los nombres exactos tal como los envía el formulario HTML
+    const { DonanteID, Monto, EstadoProceso, Canal, RequiereRecibo, ReciboEmitido } = req.body;
 
-    if (!donanteId || !monto || !estadoProceso || !canal) {
-        return res.status(400).json({ exito: false, mensaje: "DonanteID, Monto, EstadoProceso y Canal son obligatorios." });
+    if (!DonanteID || !Monto || !EstadoProceso || !Canal) {
+        return res.status(400).json({ 
+            exito: false, 
+            mensaje: "DonanteID, Monto, EstadoProceso y Canal son obligatorios." 
+        });
     }
 
     try {
         const pool = await getConnection();
         await pool.request()
-            .input("donanteId", sql.Int, donanteId)
-            .input("monto", sql.Decimal(10, 2), monto)
-            .input("estadoProceso", sql.VarChar(50), estadoProceso)
-            .input("canal", sql.VarChar(30), canal)
-            .input("requiereRecibo", sql.TinyInt, requiereRecibo !== undefined ? requiereRecibo : 1)
-            .input("reciboEmitido", sql.TinyInt, reciboEmitido !== undefined ? reciboEmitido : 0)
+            .input("donanteId", sql.Int, DonanteID)
+            .input("monto", sql.Decimal(10, 2), Monto)
+            .input("estadoProceso", sql.VarChar(50), EstadoProceso)
+            .input("canal", sql.VarChar(30), Canal)
+            .input("requiereRecibo", sql.TinyInt, RequiereRecibo !== undefined ? RequiereRecibo : 1)
+            .input("reciboEmitido", sql.TinyInt, ReciboEmitido !== undefined ? ReciboEmitido : 0)
             .query(`
                 INSERT INTO dbo.Donaciones (DonanteID, Monto, EstadoProceso, Canal, RequiereRecibo, ReciboEmitido)
                 VALUES (@donanteId, @monto, @estadoProceso, @canal, @requiereRecibo, @reciboEmitido)
@@ -70,20 +74,20 @@ const crearDonacion = async (req, res) => {
     }
 };
 
-// PUT: Actualizar donación (estado de proceso, recibo emitido, etc.)
+// PUT: Actualizar donación
 const actualizarDonacion = async (req, res) => {
     const { id } = req.params;
-    const { monto, estadoProceso, canal, requiereRecibo, reciboEmitido } = req.body;
+    const { Monto, EstadoProceso, Canal, RequiereRecibo, ReciboEmitido } = req.body;
 
     try {
         const pool = await getConnection();
         const result = await pool.request()
             .input("id", sql.Int, id)
-            .input("monto", sql.Decimal(10, 2), monto)
-            .input("estadoProceso", sql.VarChar(50), estadoProceso)
-            .input("canal", sql.VarChar(30), canal)
-            .input("requiereRecibo", sql.TinyInt, requiereRecibo)
-            .input("reciboEmitido", sql.TinyInt, reciboEmitido)
+            .input("monto", sql.Decimal(10, 2), Monto)
+            .input("estadoProceso", sql.VarChar(50), EstadoProceso)
+            .input("canal", sql.VarChar(30), Canal)
+            .input("requiereRecibo", sql.TinyInt, RequiereRecibo)
+            .input("reciboEmitido", sql.TinyInt, ReciboEmitido)
             .query(`
                 UPDATE dbo.Donaciones 
                 SET Monto = @monto, 

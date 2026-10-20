@@ -4,7 +4,7 @@ const { getConnection, sql } = require("../config/db");
 const obtenerEmpresas = async (req, res) => {
     try {
         const pool = await getConnection();
-        const result = await pool.request().query("SELECT * FROM dbo.EmpresasProspectos ORDER BY FechaRegistro DESC");
+        const result = await pool.request().query("SELECT * FROM dbo.EmpresasProspectos ORDER BY EmpresaID DESC");
         res.json({ exito: true, datos: result.recordset });
     } catch (err) {
         res.status(500).json({ exito: false, error: err.message });
@@ -31,20 +31,20 @@ const obtenerEmpresaPorId = async (req, res) => {
 
 // POST: Registrar una nueva empresa prospecto
 const crearEmpresa = async (req, res) => {
-    const { nombreEmpresa, tipoAlianza, alineacionEtica, estatus, enlaceContacto } = req.body;
+    const { NombreEmpresa, TipoAlianza, AlineacionEtica, Estatus, EnlaceContacto } = req.body;
 
-    if (!nombreEmpresa || !tipoAlianza || !estatus) {
+    if (!NombreEmpresa || !TipoAlianza || !Estatus) {
         return res.status(400).json({ exito: false, mensaje: "NombreEmpresa, TipoAlianza y Estatus son obligatorios." });
     }
 
     try {
         const pool = await getConnection();
         await pool.request()
-            .input("nombreEmpresa", sql.VarChar(150), nombreEmpresa)
-            .input("tipoAlianza", sql.VarChar(50), tipoAlianza)
-            .input("alineacionEtica", sql.TinyInt, alineacionEtica !== undefined ? alineacionEtica : 1)
-            .input("estatus", sql.VarChar(50), estatus)
-            .input("enlaceContacto", sql.VarChar(150), enlaceContacto || null)
+            .input("nombreEmpresa", sql.VarChar(150), NombreEmpresa)
+            .input("tipoAlianza", sql.VarChar(50), TipoAlianza)
+            .input("alineacionEtica", sql.TinyInt, AlineacionEtica !== undefined ? Number(AlineacionEtica) : 1)
+            .input("estatus", sql.VarChar(50), Estatus)
+            .input("enlaceContacto", sql.VarChar(150), EnlaceContacto || null)
             .query(`INSERT INTO dbo.EmpresasProspectos (NombreEmpresa, TipoAlianza, AlineacionEtica, Estatus, EnlaceContacto)
                     VALUES (@nombreEmpresa, @tipoAlianza, @alineacionEtica, @estatus, @enlaceContacto)`);
 
@@ -57,17 +57,17 @@ const crearEmpresa = async (req, res) => {
 // PUT: Actualizar una empresa prospecto
 const actualizarEmpresa = async (req, res) => {
     const { id } = req.params;
-    const { nombreEmpresa, tipoAlianza, alineacionEtica, estatus, enlaceContacto } = req.body;
+    const { NombreEmpresa, TipoAlianza, AlineacionEtica, Estatus, EnlaceContacto } = req.body;
 
     try {
         const pool = await getConnection();
         const result = await pool.request()
             .input("id", sql.Int, id)
-            .input("nombreEmpresa", sql.VarChar(150), nombreEmpresa)
-            .input("tipoAlianza", sql.VarChar(50), tipoAlianza)
-            .input("alineacionEtica", sql.TinyInt, alineacionEtica)
-            .input("estatus", sql.VarChar(50), estatus)
-            .input("enlaceContacto", sql.VarChar(150), enlaceContacto || null)
+            .input("nombreEmpresa", sql.VarChar(150), NombreEmpresa)
+            .input("tipoAlianza", sql.VarChar(50), TipoAlianza)
+            .input("alineacionEtica", sql.TinyInt, AlineacionEtica !== undefined ? Number(AlineacionEtica) : 0)
+            .input("estatus", sql.VarChar(50), Estatus)
+            .input("enlaceContacto", sql.VarChar(150), EnlaceContacto || null)
             .query(`UPDATE dbo.EmpresasProspectos 
                     SET NombreEmpresa = @nombreEmpresa, 
                         TipoAlianza = @tipoAlianza, 

@@ -31,25 +31,25 @@ const obtenerDonantePorId = async (req, res) => {
 
 // POST: Crear registro
 const crearDonante = async (req, res) => {
-    const { nombre, apellido, correo, telefono, nivelContribuyente, razonSocial, rfc, regimenFiscal, codigoPostal, usoCFDI } = req.body;
+    const { Nombre, Apellido, Correo, Telefono, NivelContribuyente, RazonSocial, RFC, RegimenFiscal, CodigoPostal, UsoCFDI } = req.body;
     
-    if (!nombre || !apellido || !correo) {
+    if (!Nombre || !Apellido || !Correo) {
         return res.status(400).json({ exito: false, mensaje: "Nombre, apellido y correo son obligatorios." });
     }
 
     try {
         const pool = await getConnection();
         await pool.request()
-            .input("nombre", sql.VarChar(100), nombre)
-            .input("apellido", sql.VarChar(100), apellido)
-            .input("correo", sql.VarChar(100), correo)
-            .input("telefono", sql.VarChar(20), telefono || null)
-            .input("nivel", sql.VarChar(20), nivelContribuyente || 'Semilla')
-            .input("razonSocial", sql.VarChar(150), razonSocial || null)
-            .input("rfc", sql.VarChar(20), rfc || null)
-            .input("regimen", sql.VarChar(10), regimenFiscal || null)
-            .input("cp", sql.VarChar(10), codigoPostal || null)
-            .input("cfdi", sql.VarChar(10), usoCFDI || null)
+            .input("nombre", sql.VarChar(100), Nombre)
+            .input("apellido", sql.VarChar(100), Apellido)
+            .input("correo", sql.VarChar(100), Correo)
+            .input("telefono", sql.VarChar(20), Telefono || null)
+            .input("nivel", sql.VarChar(20), NivelContribuyente || 'Semilla')
+            .input("razonSocial", sql.VarChar(150), RazonSocial || null)
+            .input("rfc", sql.VarChar(20), RFC || null)
+            .input("regimen", sql.VarChar(10), RegimenFiscal || null)
+            .input("cp", sql.VarChar(10), CodigoPostal || null)
+            .input("cfdi", sql.VarChar(10), UsoCFDI || null)
             .query(`INSERT INTO dbo.Donantes (Nombre, Apellido, Correo, Telefono, NivelContribuyente, RazonSocial, RFC, RegimenFiscal, CodigoPostal, UsoCFDI)
                     VALUES (@nombre, @apellido, @correo, @telefono, @nivel, @razonSocial, @rfc, @regimen, @cp, @cfdi)`);
 
@@ -62,17 +62,17 @@ const crearDonante = async (req, res) => {
 // PUT: Actualizar registro
 const actualizarDonante = async (req, res) => {
     const { id } = req.params;
-    const { nombre, apellido, correo, telefono, nivelContribuyente } = req.body;
+    const { Nombre, Apellido, Correo, Telefono, NivelContribuyente } = req.body;
 
     try {
         const pool = await getConnection();
         const result = await pool.request()
             .input("id", sql.Int, id)
-            .input("nombre", sql.VarChar(100), nombre)
-            .input("apellido", sql.VarChar(100), apellido)
-            .input("correo", sql.VarChar(100), correo)
-            .input("telefono", sql.VarChar(20), telefono)
-            .input("nivel", sql.VarChar(20), nivelContribuyente)
+            .input("nombre", sql.VarChar(100), Nombre)
+            .input("apellido", sql.VarChar(100), Apellido)
+            .input("correo", sql.VarChar(100), Correo)
+            .input("telefono", sql.VarChar(20), Telefono)
+            .input("nivel", sql.VarChar(20), NivelContribuyente)
             .query(`UPDATE dbo.Donantes 
                     SET Nombre = @nombre, Apellido = @apellido, Correo = @correo, Telefono = @telefono, NivelContribuyente = @nivel 
                     WHERE DonanteID = @id`);

@@ -31,21 +31,21 @@ const obtenerConvocatoriaPorId = async (req, res) => {
 
 // POST: Registrar una nueva convocatoria
 const crearConvocatoria = async (req, res) => {
-    const { nombreFondo, entidadFinanciera, estado, fechaCierre, aprobadaDireccion, observaciones } = req.body;
+    const { NombreFondo, EntidadFinanciera, Estado, FechaCierre, AprobadaDireccion, Observaciones } = req.body;
 
-    if (!nombreFondo || !entidadFinanciera || !estado) {
+    if (!NombreFondo || !EntidadFinanciera || !Estado) {
         return res.status(400).json({ exito: false, mensaje: "NombreFondo, EntidadFinanciera y Estado son obligatorios." });
     }
 
     try {
         const pool = await getConnection();
         await pool.request()
-            .input("nombreFondo", sql.VarChar(150), nombreFondo)
-            .input("entidadFinanciera", sql.VarChar(150), entidadFinanciera)
-            .input("estado", sql.VarChar(50), estado)
-            .input("fechaCierre", sql.Date, fechaCierre || null)
-            .input("aprobadaDireccion", sql.TinyInt, aprobadaDireccion !== undefined ? aprobadaDireccion : 0)
-            .input("observaciones", sql.VarChar(sql.MAX), observaciones || null)
+            .input("nombreFondo", sql.VarChar(150), NombreFondo)
+            .input("entidadFinanciera", sql.VarChar(150), EntidadFinanciera)
+            .input("estado", sql.VarChar(50), Estado)
+            .input("fechaCierre", sql.Date, FechaCierre || null)
+            .input("aprobadaDireccion", sql.TinyInt, AprobadaDireccion !== undefined ? Number(AprobadaDireccion) : 0)
+            .input("observaciones", sql.VarChar(sql.MAX), Observaciones || null)
             .query(`INSERT INTO dbo.Convocatorias (NombreFondo, EntidadFinanciera, Estado, FechaCierre, AprobadaDireccion, Observaciones)
                     VALUES (@nombreFondo, @entidadFinanciera, @estado, @fechaCierre, @aprobadaDireccion, @observaciones)`);
 
@@ -58,18 +58,18 @@ const crearConvocatoria = async (req, res) => {
 // PUT: Actualizar una convocatoria existente
 const actualizarConvocatoria = async (req, res) => {
     const { id } = req.params;
-    const { nombreFondo, entidadFinanciera, estado, fechaCierre, aprobadaDireccion, observaciones } = req.body;
+    const { NombreFondo, EntidadFinanciera, Estado, FechaCierre, AprobadaDireccion, Observaciones } = req.body;
 
     try {
         const pool = await getConnection();
         const result = await pool.request()
             .input("id", sql.Int, id)
-            .input("nombreFondo", sql.VarChar(150), nombreFondo)
-            .input("entidadFinanciera", sql.VarChar(150), entidadFinanciera)
-            .input("estado", sql.VarChar(50), estado)
-            .input("fechaCierre", sql.Date, fechaCierre || null)
-            .input("aprobadaDireccion", sql.TinyInt, aprobadaDireccion)
-            .input("observaciones", sql.VarChar(sql.MAX), observaciones)
+            .input("nombreFondo", sql.VarChar(150), NombreFondo)
+            .input("entidadFinanciera", sql.VarChar(150), EntidadFinanciera)
+            .input("estado", sql.VarChar(50), Estado)
+            .input("fechaCierre", sql.Date, FechaCierre || null)
+            .input("aprobadaDireccion", sql.TinyInt, AprobadaDireccion !== undefined ? Number(AprobadaDireccion) : 0)
+            .input("observaciones", sql.VarChar(sql.MAX), Observaciones || null)
             .query(`UPDATE dbo.Convocatorias 
                     SET NombreFondo = @nombreFondo, 
                         EntidadFinanciera = @entidadFinanciera, 
