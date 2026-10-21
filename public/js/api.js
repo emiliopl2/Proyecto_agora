@@ -2,10 +2,15 @@
 const API_URL = "http://localhost:3000/api";
 
 async function peticionAPI(endpoint, metodo = "GET", datos = null) {
+    // 1. Recuperar el token guardado en el navegador
+    const token = localStorage.getItem('tokenAgora');
+
     const opciones = {
         method: metodo,
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            // 2. Inyectar automáticamente la cabecera Authorization si el token existe
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
     };
 
@@ -15,6 +20,14 @@ async function peticionAPI(endpoint, metodo = "GET", datos = null) {
 
     try {
         const respuesta = await fetch(`${API_URL}${endpoint}`, opciones);
+
+        // 3. Si el token expiró o no es válido, limpiar sesión y redirigir al login
+        if (respuesta.status === 401 || respuesta.status === 403) {
+            localStorage.removeItem('tokenAgora');
+            window.location.href = 'index.html'; // Cambia por la ruta de tu vista de login
+            throw new Error("Sesión expirada o no autorizada.");
+        }
+
         const resultado = await respuesta.json();
 
         if (!respuesta.ok) {

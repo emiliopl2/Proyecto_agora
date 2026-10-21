@@ -1,4 +1,8 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { getConnection, sql } = require("../config/db");
+
+const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_super_segura_agora_2026';
 
 // POST: Iniciar sesión
 const login = async (req, res) => {
@@ -11,7 +15,6 @@ const login = async (req, res) => {
     try {
         const pool = await getConnection();
         
-        // Consultar el usuario y verificar que esté activo (Activo = 1)
         const result = await pool.request()
             .input("NombreCompleto", sql.VarChar(100), NombreCompleto)
             .query(`SELECT UsuarioID, NombreCompleto, Correo, PasswordHash, Rol, Activo 
@@ -24,15 +27,28 @@ const login = async (req, res) => {
 
         const usuario = result.recordset[0];
 
-        // Validación de contraseña (en producción se recomienda usar bcrypt, aquí validamos texto plano según tu script inicial)
-        if (usuario.PasswordHash !== password) {
+        const esValida = await bcrypt.compare(password, usuario.PasswordHash);
+
+        if (!esValida) {
             return res.status(401).json({ exito: false, mensaje: "usuario o contraseña incorrectos." });
         }
 
-        // Login exitoso
+        // Generar Token JWT (expira en 8 horas)
+        const token = jwt.sign(
+            { 
+                id: usuario.UsuarioID, 
+                nombre: usuario.NombreCompleto, 
+                rol: usuario.Rol 
+            },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        // Login exitoso respondiendo con el token
         res.json({
             exito: true,
             mensaje: "¡Bienvenido!",
+            token: token,
             usuario: {
                 id: usuario.UsuarioID,
                 nombre: usuario.NombreCompleto,

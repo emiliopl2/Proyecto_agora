@@ -8,6 +8,11 @@ const {
     eliminarBitacora
 } = require("../controllers/bitacora.controller");
 
+const { verificarToken } = require("../middlewares/auth.middleware");
+
+// Aplicar el middleware a TODAS las rutas de este archivo
+router.use(verificarToken);
+
 router.get("/", obtenerBitacoras);
 router.get("/empresa/:empresaId", obtenerBitacoraPorEmpresa);
 router.post("/", crearBitacora);

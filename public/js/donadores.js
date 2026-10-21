@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarDonaciones();
     cargarSelectDonantes();
     configurarEventosFiltros();
+    configurarEventosTablaDonantes(); // <--- Registramos el evento de la tabla una sola vez aquí
 
     // Evento Formulario Donante (Crear / Actualizar)
     const formDonante = document.getElementById("formDonante");
@@ -64,16 +65,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Configurar clics en la tabla de donantes de forma segura
+function configurarEventosTablaDonantes() {
+    const tablaDonantes = document.getElementById('tablaDonantes');
+    if (!tablaDonantes) return;
+
+    tablaDonantes.addEventListener('click', async (e) => {
+        const btnEditar = e.target.closest('.btn-editar');
+        if (!btnEditar) return;
+
+        const fila = e.target.closest('tr');
+        if (!fila) return;
+
+        const idDonante = fila.getAttribute('data-id');
+
+        try {
+            const respuesta = await peticionAPI(`/donantes/${idDonante}`, "GET");
+            
+            if (respuesta.exito) {
+                const donante = respuesta.datos;
+
+                // Corregido: Se usan los IDs exactos definidos en el HTML del modal
+                document.getElementById('DonanteID').value = donante.DonanteID || '';
+                document.getElementById('Nombre').value = donante.Nombre || '';
+                document.getElementById('Apellido').value = donante.Apellido || '';
+                document.getElementById('Correo').value = donante.Correo || '';
+                document.getElementById('Telefono').value = donante.Telefono || '';
+                document.getElementById('NivelContribuyente').value = donante.NivelContribuyente || 'Semilla';
+                document.getElementById('RazonSocial').value = donante.RazonSocial || '';
+                document.getElementById('RFC').value = donante.RFC || '';
+                document.getElementById('RegimenFiscal').value = donante.RegimenFiscal || '';
+                document.getElementById('CodigoPostal').value = donante.CodigoPostal || '';
+                document.getElementById('UsoCFDI').value = donante.UsoCFDI || '';
+
+                // Mostrar el modal de edición
+                const modal = document.getElementById('modalDonante');
+                if (modal) modal.classList.add('activo'); // O la clase correspondiente que maneje ui.js para mostrar la ventana
+            }
+        } catch (err) {
+            console.error(err);
+            alert("No se pudo cargar la información del donante para editar.");
+        }
+    });
+}
+
 // Registrar eventos en los campos de filtro
 function configurarEventosFiltros() {
-    // Filtros Donantes
     const buscarDonante = document.getElementById("buscarDonante");
     const filtroNivel = document.getElementById("filtroNivel");
 
     if (buscarDonante) buscarDonante.addEventListener("input", renderizarDonantes);
     if (filtroNivel) filtroNivel.addEventListener("change", renderizarDonantes);
 
-    // Filtros Donaciones
     const buscarDonacion = document.getElementById("buscarDonacion");
     const filtroEstadoProceso = document.getElementById("filtroEstadoProceso");
     const filtroReciboPendiente = document.getElementById("filtroReciboPendiente");
@@ -89,7 +132,6 @@ async function cargarDonantes() {
         const res = await peticionAPI("/donantes");
         listaDonantes = res.datos || [];
 
-        // Actualizar KPI 1 (Cantidad total de donantes registrados)
         const kpiValores = document.querySelectorAll(".kpi-valor");
         if (kpiValores.length > 0) {
             kpiValores[0].textContent = listaDonantes.length;
@@ -109,14 +151,11 @@ function renderizarDonantes() {
     const textoBusqueda = (document.getElementById("buscarDonante")?.value || "").toLowerCase().trim();
     const nivelSeleccionado = document.getElementById("filtroNivel")?.value || "";
 
-    // Aplicar filtros
     const donantesFiltrados = listaDonantes.filter(d => {
         const nombreCompleto = `${d.Nombre || ''} ${d.Apellido || ''}`.toLowerCase();
         const correo = (d.Correo || '').toLowerCase();
         const coincideTexto = !textoBusqueda || nombreCompleto.includes(textoBusqueda) || correo.includes(textoBusqueda);
-        
         const coincideNivel = !nivelSeleccionado || (d.NivelContribuyente === nivelSeleccionado);
-
         return coincideTexto && coincideNivel;
     });
 
@@ -137,7 +176,7 @@ function renderizarDonantes() {
                 <td>${d.RFC || '—'}</td>
                 <td>
                     <div class="acciones">
-                        <button type="button" class="btn-icono btn-editar" onclick="editarDonante(${d.DonanteID})" aria-label="Editar"><span data-icon="edit"></span></button>
+                        <button type="button" class="btn-icono btn-editar" data-abrir="modalDonante" aria-label="Editar"><span data-icon="edit"></span></button>
                         <button type="button" class="btn-icono peligro btn-eliminar" onclick="eliminarRegistro('donantes', ${d.DonanteID})" aria-label="Eliminar"><span data-icon="trash"></span></button>
                     </div>
                 </td>
@@ -146,7 +185,6 @@ function renderizarDonantes() {
         });
     }
 
-    // Pie de tabla
     const pieSpan = document.querySelector("#panelDonantes .tabla-pie span");
     if (pieSpan) {
         pieSpan.textContent = `Mostrando ${donantesFiltrados.length} de ${listaDonantes.length} donantes`;
@@ -171,7 +209,6 @@ async function cargarDonaciones() {
             }
         });
 
-        // Actualizar KPIs de Total Donado y Recibos Pendientes
         const kpiValores = document.querySelectorAll(".kpi-valor");
         if (kpiValores.length > 1) {
             kpiValores[1].textContent = `$${totalDonado.toFixed(2)}`;
@@ -195,15 +232,11 @@ function renderizarDonaciones() {
     const estadoSeleccionado = document.getElementById("filtroEstadoProceso")?.value || "";
     const soloRecibosPendientes = document.getElementById("filtroReciboPendiente")?.checked || false;
 
-    // Aplicar filtros
     const donacionesFiltradas = listaDonaciones.filter(d => {
         const nombreDonante = (d.Donante || '').toLowerCase();
         const coincideTexto = !textoBusqueda || nombreDonante.includes(textoBusqueda);
-
         const coincideEstado = !estadoSeleccionado || (d.EstadoProceso === estadoSeleccionado);
-
         const coincideRecibo = !soloRecibosPendientes || (Number(d.RequiereRecibo) === 1 && Number(d.ReciboEmitido) === 0);
-
         return coincideTexto && coincideEstado && coincideRecibo;
     });
 
@@ -234,7 +267,6 @@ function renderizarDonaciones() {
         });
     }
 
-    // Pie de tabla
     const paneles = document.querySelectorAll("[role='tabpanel']");
     if (paneles.length > 1) {
         const pieDonaciones = paneles[1].querySelector(".tabla-pie span");

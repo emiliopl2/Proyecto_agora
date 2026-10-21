@@ -8,6 +8,11 @@ const {
     eliminarEmpresa
 } = require("../controllers/empresas.controller");
 
+const { verificarToken } = require("../middlewares/auth.middleware");
+
+// Aplicar el middleware a TODAS las rutas de este archivo
+router.use(verificarToken);
+
 router.get("/", obtenerEmpresas);
 router.get("/:id", obtenerEmpresaPorId);
 router.post("/", crearEmpresa);

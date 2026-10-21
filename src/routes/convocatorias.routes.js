@@ -8,6 +8,11 @@ const {
     eliminarConvocatoria
 } = require("../controllers/convocatorias.controller");
 
+const { verificarToken } = require("../middlewares/auth.middleware");
+
+// Aplicar el middleware a TODAS las rutas de este archivo
+router.use(verificarToken);
+
 router.get("/", obtenerConvocatorias);
 router.get("/:id", obtenerConvocatoriaPorId);
 router.post("/", crearConvocatoria);

@@ -69,40 +69,8 @@
     </main>
 
     <script src="js/ui.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/login.js"></script>
 
-    <!-- ===== Lógica de login de Emi: SIN CAMBIOS ===== -->
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const NombreCompleto = document.getElementById('NombreCompleto').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('mensajeError');
-
-            errorDiv.classList.add('hidden');
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ NombreCompleto, password })
-                });
-
-                const data = await response.json();
-
-                if (data.exito) {
-                    // Guardar datos básicos en la sesión del navegador y redirigir
-                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                    window.location.href = 'dashboard.html';
-                } else {
-                    errorDiv.textContent = data.mensaje;
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (err) {
-                errorDiv.textContent = 'Error de conexión con el servidor.';
-                errorDiv.classList.remove('hidden');
-            }
-        });
-    </script>
 </body>
 </html>

@@ -1,24 +1,35 @@
 const { getConnection, sql } = require("../config/db");
 
-// GET: Obtener todos
+// GET: Obtener todos con el Total Donado calculado automáticamente
 const obtenerDonantes = async (req, res) => {
     try {
         const pool = await getConnection();
-        const result = await pool.request().query("SELECT * FROM dbo.Donantes");
+        const result = await pool.request().query(`
+            SELECT 
+                d.*,
+                (SELECT COALESCE(SUM(Monto), 0) FROM dbo.Donaciones WHERE DonanteID = d.DonanteID) AS TotalDonado
+            FROM dbo.Donantes d
+        `);
         res.json({ exito: true, datos: result.recordset });
     } catch (err) {
         res.status(500).json({ exito: false, error: err.message });
     }
 };
 
-// GET: Obtener por ID
+// GET: Obtener por ID con el Total Donado calculado
 const obtenerDonantePorId = async (req, res) => {
     const { id } = req.params;
     try {
         const pool = await getConnection();
         const result = await pool.request()
             .input("id", sql.Int, id)
-            .query("SELECT * FROM dbo.Donantes WHERE DonanteID = @id");
+            .query(`
+                SELECT 
+                    d.*,
+                    (SELECT COALESCE(SUM(Monto), 0) FROM dbo.Donaciones WHERE DonanteID = d.DonanteID) AS TotalDonado
+                FROM dbo.Donantes d 
+                WHERE d.DonanteID = @id
+            `);
 
         if (result.recordset.length === 0) {
             return res.status(404).json({ exito: false, mensaje: "Donante no encontrado." });
@@ -59,10 +70,10 @@ const crearDonante = async (req, res) => {
     }
 };
 
-// PUT: Actualizar registro
+// PUT: Actualizar registro (Actualizado para contemplar todos los campos del formulario)
 const actualizarDonante = async (req, res) => {
     const { id } = req.params;
-    const { Nombre, Apellido, Correo, Telefono, NivelContribuyente } = req.body;
+    const { Nombre, Apellido, Correo, Telefono, NivelContribuyente, RazonSocial, RFC, RegimenFiscal, CodigoPostal, UsoCFDI } = req.body;
 
     try {
         const pool = await getConnection();
@@ -71,10 +82,24 @@ const actualizarDonante = async (req, res) => {
             .input("nombre", sql.VarChar(100), Nombre)
             .input("apellido", sql.VarChar(100), Apellido)
             .input("correo", sql.VarChar(100), Correo)
-            .input("telefono", sql.VarChar(20), Telefono)
-            .input("nivel", sql.VarChar(20), NivelContribuyente)
+            .input("telefono", sql.VarChar(20), Telefono || null)
+            .input("nivel", sql.VarChar(20), NivelContribuyente || 'Semilla')
+            .input("razonSocial", sql.VarChar(150), RazonSocial || null)
+            .input("rfc", sql.VarChar(20), RFC || null)
+            .input("regimen", sql.VarChar(10), RegimenFiscal || null)
+            .input("cp", sql.VarChar(10), CodigoPostal || null)
+            .input("cfdi", sql.VarChar(10), UsoCFDI || null)
             .query(`UPDATE dbo.Donantes 
-                    SET Nombre = @nombre, Apellido = @apellido, Correo = @correo, Telefono = @telefono, NivelContribuyente = @nivel 
+                    SET Nombre = @nombre, 
+                        Apellido = @apellido, 
+                        Correo = @correo, 
+                        Telefono = @telefono, 
+                        NivelContribuyente = @nivel,
+                        RazonSocial = @razonSocial,
+                        RFC = @rfc,
+                        RegimenFiscal = @regimen,
+                        CodigoPostal = @cp,
+                        UsoCFDI = @cfdi
                     WHERE DonanteID = @id`);
 
         if (result.rowsAffected[0] === 0) {
@@ -83,7 +108,7 @@ const actualizarDonante = async (req, res) => {
 
         res.json({ exito: true, mensaje: "Donante actualizado correctamente." });
     } catch (err) {
-        res.status(500).json({ exito: false, error: err.message });
+        res.status(500).json({ exito: false, error: err.message});
     }
 };
 
