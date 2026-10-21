@@ -7,7 +7,7 @@ GO
 -- 1. Otorgar permisos completos (SELECT, INSERT, UPDATE, DELETE) 
 -- usando el nombre correcto del rol: [lector_agora] (con guion bajo)
 
-GRANT SELECT ON OBJECT::dbo.Usuarios TO [lector_agora];
+GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.Usuarios TO [lector_agora];
 GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.Donantes TO [lector_agora];
 GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.Donaciones TO [lector_agora];
 GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::dbo.ExpedienteInstitucional TO [lector_agora];

@@ -1,6 +1,7 @@
 const { getConnection, sql } = require("../config/db");
+const { cifrar, descifrar } = require("../utils/crypto.helper");
 
-// GET: Obtener todos con el Total Donado calculado automáticamente
+// GET: Obtener todos (Descifra el RFC de cada donante para mostrarlo en texto plano)
 const obtenerDonantes = async (req, res) => {
     try {
         const pool = await getConnection();
@@ -10,13 +11,20 @@ const obtenerDonantes = async (req, res) => {
                 (SELECT COALESCE(SUM(Monto), 0) FROM dbo.Donaciones WHERE DonanteID = d.DonanteID) AS TotalDonado
             FROM dbo.Donantes d
         `);
-        res.json({ exito: true, datos: result.recordset });
+
+        // Descifrar el RFC de cada registro antes de enviarlo al cliente
+        const donantesProcesados = result.recordset.map(donante => ({
+            ...donante,
+            RFC: descifrar(donante.RFC)
+        }));
+
+        res.json({ exito: true, datos: donantesProcesados });
     } catch (err) {
         res.status(500).json({ exito: false, error: err.message });
     }
 };
 
-// GET: Obtener por ID con el Total Donado calculado
+// GET: Obtener por ID (Descifra el RFC del donante específico)
 const obtenerDonantePorId = async (req, res) => {
     const { id } = req.params;
     try {
@@ -34,7 +42,12 @@ const obtenerDonantePorId = async (req, res) => {
         if (result.recordset.length === 0) {
             return res.status(404).json({ exito: false, mensaje: "Donante no encontrado." });
         }
-        res.json({ exito: true, datos: result.recordset[0] });
+
+        const donante = result.recordset[0];
+        // Descifrar el RFC
+        donante.RFC = descifrar(donante.RFC);
+
+        res.json({ exito: true, datos: donante });
     } catch (err) {
         res.status(500).json({ exito: false, error: err.message });
     }
@@ -49,6 +62,10 @@ const crearDonante = async (req, res) => {
     }
 
     try {
+        // Forzamos el RFC a mayúsculas antes de cifrarlo
+        const rfcLimpio = RFC ? RFC.trim().toUpperCase() : null;
+        const rfcCifrado = rfcLimpio ? cifrar(rfcLimpio) : null;
+
         const pool = await getConnection();
         await pool.request()
             .input("nombre", sql.VarChar(100), Nombre)
@@ -57,7 +74,7 @@ const crearDonante = async (req, res) => {
             .input("telefono", sql.VarChar(20), Telefono || null)
             .input("nivel", sql.VarChar(20), NivelContribuyente || 'Semilla')
             .input("razonSocial", sql.VarChar(150), RazonSocial || null)
-            .input("rfc", sql.VarChar(20), RFC || null)
+            .input("rfc", sql.VarChar(255), rfcCifrado)
             .input("regimen", sql.VarChar(10), RegimenFiscal || null)
             .input("cp", sql.VarChar(10), CodigoPostal || null)
             .input("cfdi", sql.VarChar(10), UsoCFDI || null)
@@ -70,12 +87,16 @@ const crearDonante = async (req, res) => {
     }
 };
 
-// PUT: Actualizar registro (Actualizado para contemplar todos los campos del formulario)
+// PUT: Actualizar registro
 const actualizarDonante = async (req, res) => {
     const { id } = req.params;
     const { Nombre, Apellido, Correo, Telefono, NivelContribuyente, RazonSocial, RFC, RegimenFiscal, CodigoPostal, UsoCFDI } = req.body;
 
     try {
+        // Forzamos el RFC a mayúsculas antes de cifrarlo
+        const rfcLimpio = RFC ? RFC.trim().toUpperCase() : null;
+        const rfcCifrado = rfcLimpio ? cifrar(rfcLimpio) : null;
+
         const pool = await getConnection();
         const result = await pool.request()
             .input("id", sql.Int, id)
@@ -85,7 +106,7 @@ const actualizarDonante = async (req, res) => {
             .input("telefono", sql.VarChar(20), Telefono || null)
             .input("nivel", sql.VarChar(20), NivelContribuyente || 'Semilla')
             .input("razonSocial", sql.VarChar(150), RazonSocial || null)
-            .input("rfc", sql.VarChar(20), RFC || null)
+            .input("rfc", sql.VarChar(255), rfcCifrado)
             .input("regimen", sql.VarChar(10), RegimenFiscal || null)
             .input("cp", sql.VarChar(10), CodigoPostal || null)
             .input("cfdi", sql.VarChar(10), UsoCFDI || null)
@@ -108,7 +129,7 @@ const actualizarDonante = async (req, res) => {
 
         res.json({ exito: true, mensaje: "Donante actualizado correctamente." });
     } catch (err) {
-        res.status(500).json({ exito: false, error: err.message});
+        res.status(500).json({ exito: false, error: err.message });
     }
 };
 
