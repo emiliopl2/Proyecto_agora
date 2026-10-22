@@ -1,5 +1,5 @@
 // public/js/api.js
-const API_URL = "http://localhost:3000/api";
+const API_URL = "/api";
 
 async function peticionAPI(endpoint, metodo = "GET", datos = null) {
     // 1. Recuperar el token guardado en el navegador
