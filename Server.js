@@ -37,6 +37,15 @@ app.use("/api/empresas", empresasRoutes);
 app.use("/api/bitacora", bitacoraRoutes);
 
 // =========================================================================
+// MONTAR RUTAS EN LA API PARA PRIMER SEMESTRE
+// =========================================================================
+
+const externoRoutes = require("./src/routes/externo/externo.routes");
+
+// Montar rutas del nodo externo
+app.use("/api/externo", externoRoutes);
+
+// =========================================================================
 // INICIAR EL SERVIDOR WEB PARA TODA LA RED
 // =========================================================================
 // Nota: Usar '0.0.0.0' en lugar de 'localhost' es la clave para que dispositivos
